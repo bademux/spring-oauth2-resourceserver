@@ -1,0 +1,59 @@
+plugins {
+    id 'application'
+    id 'groovy'
+}
+
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    springBom
+
+    annotationProcessor.extendsFrom springBom
+    compileOnly.extendsFrom springBom
+    implementation.extendsFrom springBom
+
+    testBase.extendsFrom springBom
+
+    testImplementation.extendsFrom testBase, implementation
+    testAnnotationProcessor.extendsFrom annotationProcessor
+    testCompileOnly.extendsFrom testAnnotationProcessor
+}
+
+dependencies {
+    springBom enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
+
+    compileOnly group: 'org.projectlombok', name: 'lombok'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok'
+    annotationProcessor group: 'org.springframework', name: 'spring-context-indexer'
+
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-resource-server'
+
+    testBase enforcedPlatform(group: 'org.spockframework', name: 'spock-bom', version: spockVersion)
+    testBase group: 'org.spockframework', name: 'spock-core'
+    testBase group: 'org.codehaus.groovy', name: 'groovy-json'
+
+    testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: wiremockVersion
+}
+
+application {
+    mainClass.set('com.github.bademux.spring-oauth2-resourceserver.Application')
+}
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+run {
+    enableAssertions = true
+    args '--spring.profiles.active=local-dev' //use application-local-dev.properties
+}
+
+test {
+    useJUnitPlatform()
+}
